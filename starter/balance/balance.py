@@ -1,6 +1,7 @@
 # balance.py
 
 from transaction.transaction_category import TransactionCategory
+from transaction.transaction import Transaction
 from balance.overdraft_policy import AllowOverdraft
 
 
@@ -76,6 +77,24 @@ class Balance:
         else:
             raise ValueError(f"Invalid transaction category: {transaction.category}")
         self._notify_observers(transaction)
+
+    def undo_transaction(self, transaction):
+        """
+        Reverse a transaction that was applied earlier.
+
+        The overdraft policy is skipped on purpose: undoing should always
+        work. Observers are told about the reversal as the opposite
+        transaction (e.g. undoing an expense looks like income).
+        """
+        if transaction.category == TransactionCategory.INCOME:
+            self._net_balance -= transaction.amount
+            opposite = TransactionCategory.EXPENSE
+        elif transaction.category == TransactionCategory.EXPENSE:
+            self._net_balance += transaction.amount
+            opposite = TransactionCategory.INCOME
+        else:
+            raise ValueError(f"Invalid transaction category: {transaction.category}")
+        self._notify_observers(Transaction(transaction.amount, opposite))
 
     def get_balance(self):
         """Get the current net balance."""

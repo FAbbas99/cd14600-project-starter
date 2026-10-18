@@ -65,6 +65,9 @@ python -m unittest balance/test_balance_observer.py
 | Adapter | Turns `ExternalFreelanceIncome` into a `Transaction` | `starter/transaction/transaction_adapter.py` |
 | Observer | `PrintObserver` and `LowBalanceAlertObserver` listen to `Balance` | `starter/balance/balance_observer.py` |
 | Strategy (my choice) | Swappable overdraft rules | `starter/balance/overdraft_policy.py` |
+| Command (extra) | Undo/redo for transactions | `starter/balance/commands.py` |
+| Strategy again (extra) | Budget planning (50/30/20, zero-based) | `starter/budget/budget_strategy.py` |
+| Decorator (extra) | Validation and logging around the balance | `starter/balance/balance_decorators.py` |
 
 ## Reflection
 
@@ -95,10 +98,34 @@ python -m unittest balance/test_balance_observer.py
 - One thing I had to figure out was that the alert needs to switch back off once the balance goes over the threshold, because the test checks for that.
 - Another small trade-off is that add_income and add_expense don't notify anyone if I call them directly. Only apply_transaction does, because the observers need a transaction to report on.
 
+### Command (undo/redo)
+- After the four required patterns I wanted to try the extra ideas from the project suggestions, and undo seemed the most useful for a finance app.
+- Each transaction gets wrapped in an ApplyTransactionCommand with execute() and undo(). A CommandHistory keeps two lists, one for undo and one for redo.
+- The part that took me a while was that undo has to actually reverse the money. I added undo_transaction() to Balance, which subtracts an income or adds back an expense.
+- I made undo skip the overdraft policy on purpose, because otherwise undoing something could get blocked, which would be confusing.
+- Observers get told about an undo too. Since they expect a transaction, I send the opposite one (undoing an expense looks like income), so the print output says "Applied ... Income". It works but it's a bit of a shortcut.
+- If a command fails (like a rejected expense) it doesn't get added to the history, so undo can't undo something that never happened.
+
+### Strategy again (budget planning)
+- This is a second use of Strategy, this time in a new budget folder, completely separate from the overdraft one.
+- BudgetPlanner is given a strategy and calls allocate(income). I made 50/30/20 and zero-based.
+- Zero-based needs the user's own amounts, so I pass them into the strategy when I create it. Anything left over shows up as "Unassigned", and it raises an error if the plan is more than the income.
+- You can swap the strategy with set_strategy() while the app is running, which is the flexible part.
+- Trade-off: the planner only shows a plan and doesn't connect to the Balance. I kept it simple, but it could be hooked up later.
+
+### Decorator (validation and logging)
+- I made a BalanceDecorator base class that wraps a balance and passes calls through, then two versions: one that validates and one that logs.
+- ValidatingBalanceDecorator rejects amounts that are zero, negative, or not numbers (I also had to block True/False because Python counts them as numbers), and categories that aren't a TransactionCategory.
+- LoggingBalanceDecorator uses Python's logging module and logs each transaction and whether it was accepted or rejected.
+- They stack, so in main.py I wrapped logging around validating around the real balance. The order matters, because logging on the outside can log the rejection.
+- I didn't put the validation inside Balance itself, since the starter tests expect Balance to behave a certain way (like raising ValueError for a fake category). The decorator lets me add checks without changing it.
+- Trade-off: I used __getattr__ to forward other methods like get_balance(), which is handy but a bit magical and harder to follow when I first read it.
+
 ### Overall
 - The biggest thing I learned is that these patterns make it easier to change one piece without breaking the others.
-- The downside is more files and classes than a quick script would need, which felt like a lot for such a small app.
-- Passing in the observers and the policy from outside (in main.py and the tests) made testing a lot simpler.
+- The downside is more files and classes than a quick script would need, which felt like a lot for such a small app. By the end I had seven pattern uses in a program that would fit in one file.
+- Passing in the observers, the policies and the wrapped balance from outside (in main.py and the tests) made testing a lot simpler.
+- The patterns also worked well together. For example a command can wrap a decorated balance and not care that it is decorated.
 
 ## Running
 
