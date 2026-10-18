@@ -1,6 +1,7 @@
 import unittest
 from budget.budget_strategy import (
-    BudgetPlanner, FiftyThirtyTwentyStrategy, IBudgetStrategy, ZeroBasedStrategy)
+    BudgetPlanner, FiftyThirtyTwentyStrategy, IBudgetStrategy,
+    ZeroBasedStrategy)
 
 
 class TestBudgetStrategy(unittest.TestCase):

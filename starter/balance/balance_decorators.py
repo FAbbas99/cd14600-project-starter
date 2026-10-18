@@ -33,7 +33,8 @@ class ValidatingBalanceDecorator(BalanceDecorator):
         if amount <= 0:
             raise ValueError("Transaction amount must be greater than zero.")
         if not isinstance(transaction.category, TransactionCategory):
-            raise ValueError("Transaction category must be a TransactionCategory.")
+            raise ValueError(
+                "Transaction category must be a TransactionCategory.")
         super().apply_transaction(transaction)
 
 

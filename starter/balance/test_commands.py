@@ -14,7 +14,8 @@ class TestCommands(unittest.TestCase):
         self.history = CommandHistory()
 
     def _cmd(self, amount, category):
-        return ApplyTransactionCommand(self.balance, Transaction(amount, category))
+        return ApplyTransactionCommand(
+            self.balance, Transaction(amount, category))
 
     def test_execute_applies_transaction(self):
         self.history.execute(self._cmd(100, TransactionCategory.INCOME))

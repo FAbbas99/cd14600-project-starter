@@ -1,6 +1,7 @@
 import unittest
 from balance.balance import Balance
-from balance.overdraft_policy import NoOverdraft, OverdraftLimit, AllowOverdraft
+from balance.overdraft_policy import (
+    AllowOverdraft, NoOverdraft, OverdraftLimit)
 from transaction.transaction import Transaction
 from transaction.transaction_category import TransactionCategory
 
@@ -19,7 +20,8 @@ class TestOverdraftPolicy(unittest.TestCase):
         self.balance.set_overdraft_policy(NoOverdraft())
         self.balance.add_income(50)
         with self.assertRaises(ValueError):
-            self.balance.apply_transaction(Transaction(80, TransactionCategory.EXPENSE))
+            self.balance.apply_transaction(
+                Transaction(80, TransactionCategory.EXPENSE))
         self.assertEqual(self.balance.get_balance(), 50)
 
     def test_no_overdraft_allows_exact_zero(self):

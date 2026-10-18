@@ -2,6 +2,7 @@
 
 from transaction.transaction_category import TransactionCategory
 
+
 class Transaction:
     """Represents a financial transaction with an amount and category."""
 

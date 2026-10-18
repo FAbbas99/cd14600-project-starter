@@ -59,7 +59,8 @@ class Balance:
 
     def add_expense(self, amount):
         """Subtract expense from the balance."""
-        if not self._overdraft_policy.allows_expense(self._net_balance, amount):
+        policy = self._overdraft_policy
+        if not policy.allows_expense(self._net_balance, amount):
             raise ValueError("Expense rejected by overdraft policy.")
         self._net_balance -= amount
 
@@ -75,7 +76,8 @@ class Balance:
         elif transaction.category == TransactionCategory.EXPENSE:
             self.add_expense(transaction.amount)
         else:
-            raise ValueError(f"Invalid transaction category: {transaction.category}")
+            raise ValueError(
+                f"Invalid transaction category: {transaction.category}")
         self._notify_observers(transaction)
 
     def undo_transaction(self, transaction):
@@ -93,7 +95,8 @@ class Balance:
             self._net_balance += transaction.amount
             opposite = TransactionCategory.INCOME
         else:
-            raise ValueError(f"Invalid transaction category: {transaction.category}")
+            raise ValueError(
+                f"Invalid transaction category: {transaction.category}")
         self._notify_observers(Transaction(transaction.amount, opposite))
 
     def get_balance(self):

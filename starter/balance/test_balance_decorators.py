@@ -21,14 +21,16 @@ class TestBalanceDecorators(unittest.TestCase):
         wrapped = ValidatingBalanceDecorator(self.balance)
         for amount in (0, -5):
             with self.assertRaises(ValueError):
-                wrapped.apply_transaction(Transaction(amount, TransactionCategory.INCOME))
+                wrapped.apply_transaction(
+                    Transaction(amount, TransactionCategory.INCOME))
         self.assertEqual(self.balance.get_balance(), 0)
 
     def test_validating_rejects_non_numbers(self):
         wrapped = ValidatingBalanceDecorator(self.balance)
         for amount in ("100", None, True):
             with self.assertRaises(ValueError):
-                wrapped.apply_transaction(Transaction(amount, TransactionCategory.INCOME))
+                wrapped.apply_transaction(
+                    Transaction(amount, TransactionCategory.INCOME))
 
     def test_validating_rejects_bad_category(self):
         wrapped = ValidatingBalanceDecorator(self.balance)
@@ -43,7 +45,8 @@ class TestBalanceDecorators(unittest.TestCase):
     def test_logging_logs_success(self):
         wrapped = LoggingBalanceDecorator(self.balance)
         with self.assertLogs("finance", level="INFO") as logs:
-            wrapped.apply_transaction(Transaction(40, TransactionCategory.INCOME))
+            wrapped.apply_transaction(
+                Transaction(40, TransactionCategory.INCOME))
         self.assertEqual(len(logs.output), 2)
         self.assertEqual(self.balance.get_balance(), 40)
 
@@ -52,7 +55,8 @@ class TestBalanceDecorators(unittest.TestCase):
             ValidatingBalanceDecorator(self.balance))
         with self.assertLogs("finance", level="WARNING") as logs:
             with self.assertRaises(ValueError):
-                wrapped.apply_transaction(Transaction(-1, TransactionCategory.INCOME))
+                wrapped.apply_transaction(
+                    Transaction(-1, TransactionCategory.INCOME))
         self.assertIn("Rejected", logs.output[0])
 
 

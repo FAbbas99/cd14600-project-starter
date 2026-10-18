@@ -3,6 +3,7 @@ from balance.balance import Balance
 from transaction.transaction import Transaction
 from transaction.transaction_category import TransactionCategory
 
+
 class TestBalance(unittest.TestCase):
 
     def setUp(self):
@@ -55,6 +56,7 @@ class TestBalance(unittest.TestCase):
     def test_summary(self):
         self.balance.add_income(25)
         self.assertEqual(self.balance.summary(), "Net balance: $25.0")
+
 
 if __name__ == "__main__":
     unittest.main()

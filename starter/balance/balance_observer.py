@@ -1,5 +1,6 @@
 # balance_observer.py
 
+
 class IBalanceObserver:
     def update(self, balance, transaction):
         """Handle balance updates."""
