@@ -9,4 +9,7 @@ class TransactionAdapter:
 
     def to_transaction(self):
         """Convert an external transaction to a standard Transaction."""
-        pass
+        # Freelance income is always income. The invoice id and description
+        # are specific to the external platform, so the app doesn't keep them.
+        return Transaction(self.external_transaction.amount,
+                           TransactionCategory.INCOME)

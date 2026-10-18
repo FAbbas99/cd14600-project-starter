@@ -12,5 +12,11 @@ class TestTransactionAdapter(unittest.TestCase):
         txn = adapter.to_transaction()
         self.assertEqual(txn, Transaction(500, TransactionCategory.INCOME))
 
+    def test_adapter_result_is_income(self):
+        ext_txn = ExternalFreelanceIncome(75, "INV-1", "Logo design")
+        txn = TransactionAdapter(ext_txn).to_transaction()
+        self.assertEqual(txn.category, TransactionCategory.INCOME)
+        self.assertEqual(txn.amount, 75)
+
 if __name__ == "__main__":
     unittest.main()

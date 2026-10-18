@@ -48,5 +48,13 @@ class TestBalance(unittest.TestCase):
         self.balance.reset()
         self.assertEqual(self.balance.get_balance(), 0.0)
 
+    def test_direct_instantiation_blocked(self):
+        with self.assertRaises(RuntimeError):
+            Balance()
+
+    def test_summary(self):
+        self.balance.add_income(25)
+        self.assertEqual(self.balance.summary(), "Net balance: $25.0")
+
 if __name__ == "__main__":
     unittest.main()
