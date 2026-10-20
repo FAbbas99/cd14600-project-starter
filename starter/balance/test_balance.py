@@ -49,9 +49,28 @@ class TestBalance(unittest.TestCase):
         self.balance.reset()
         self.assertEqual(self.balance.get_balance(), 0.0)
 
-    def test_direct_instantiation_blocked(self):
-        with self.assertRaises(RuntimeError):
-            Balance()
+    def test_direct_construction_returns_shared_instance(self):
+        self.assertIs(Balance(), Balance.get_instance())
+        self.assertIs(Balance(), Balance())
+
+    def test_direct_construction_before_first_get_instance(self):
+        # Simulate a fresh program where nothing has been created yet.
+        saved = Balance._instance
+        self.addCleanup(setattr, Balance, "_instance", saved)
+        Balance._instance = None
+
+        first = Balance()
+        second = Balance()
+        self.assertIs(first, second)
+        self.assertIs(Balance.get_instance(), first)
+
+    def test_construction_does_not_erase_existing_state(self):
+        self.balance.add_income(100)
+        observer = object()
+        self.balance.register_observer(observer)
+        again = Balance()
+        self.assertEqual(again.get_balance(), 100)
+        self.assertIn(observer, again._observers)
 
     def test_summary(self):
         self.balance.add_income(25)

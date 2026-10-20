@@ -10,10 +10,27 @@ class Balance:
 
     _instance = None
 
+    def __new__(cls):
+        """Create the one shared instance, or return it if it exists.
+
+        Allocation is controlled here, so Balance() and get_instance()
+        always give back the same object, even on the very first call.
+        """
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
     def __init__(self):
-        """Initialize the balance. Prevent direct instantiation."""
-        if Balance._instance is not None:
-            raise RuntimeError("Use Balance.get_instance() instead.")
+        """Set up the state once. Later Balance() calls keep existing state.
+
+        Python calls __init__ every time Balance() is called, so without
+        this check a second call would wipe the balance. Use reset() to
+        clear state on purpose.
+        """
+        if self._initialized:
+            return
+        self._initialized = True
         self._net_balance = 0.0
         self._observers = []
         self._overdraft_policy = AllowOverdraft()
@@ -21,9 +38,7 @@ class Balance:
     @classmethod
     def get_instance(cls):
         """Return the single Balance instance, creating it if needed."""
-        if cls._instance is None:
-            cls._instance = cls()
-        return cls._instance
+        return cls()
 
     def reset(self):
         """Reset the net balance to zero.

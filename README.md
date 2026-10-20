@@ -78,9 +78,11 @@ using them in a real program. Here is what I used and what I learned.
 
 #### Singleton (Balance)
 - Why I chose it: the app should only ever have one balance. If two parts of the code each had their own Balance they would show different amounts.
-- What I did: Balance has a get_instance() method that creates the object the first time and gives back the same one after that. I also made __init__ raise an error if someone tries Balance() directly.
+- What I did: I control object creation in __new__, which makes the one instance the first time and returns that same object every time after. get_instance() just calls Balance(), so there is only one way objects get created.
+- Because Python runs __init__ on every Balance() call, I added an _initialized flag so the state is only set up once. Otherwise a second Balance() would wipe out the balance.
+- My first version put the check in __init__ instead, and my project feedback caught that it did not work. Calling Balance() before the first get_instance() made a separate balance that was never saved. My test missed it because setUp() already called get_instance(), so I added a test that clears the instance first.
 - How it helped: every part of the app (main.py, the commands, the tests) sees the same balance.
-- Trade-off: the instance stays alive for the whole test run, so one test could change the balance for the next one. I fixed it by having reset() clear the balance, observers and policy, and calling it in every setUp.
+- Trade-off: the __new__ plus _initialized combo is a little harder to understand than a plain class. Also, the instance stays alive for the whole test run, so one test could change the balance for the next one. I fixed it by having reset() clear the balance, observers and policy, and calling it in every setUp.
 - Another thing I noticed: a Singleton is basically a global variable, so I would not want to use it for lots of things.
 
 #### Adapter (TransactionAdapter)
